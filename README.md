@@ -26,20 +26,20 @@ table bellow:
 
 ```lua
 local defaults = {
-	-- should cycle when reaching last or first
-	cycle = true,
+   -- should cycle when reaching last or first
+   cycle = true,
 
-	-- should open diagnostics float after jumping
-	open_float = true,
+   -- should open diagnostics float after jumping
+   open_float = true,
 
-	-- should the item to jump to be calculated based on cursor position or
-	-- remember the last diagnostic jumped to
-	follow_cursor = true,
+   -- should the item to jump to be calculated based on cursor position or
+   -- remember the last diagnostic jumped to
+   follow_cursor = true,
 
-	mappings = {
-		["[d"] = "prev",
-		["]d"] = "next",
-	},
+   mappings = {
+	["[d"] = "prev",
+	["]d"] = "next",
+   },
 }
 ```
 
