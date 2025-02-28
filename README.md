@@ -56,33 +56,34 @@ The most useful parts of it are listed bellow, and more might be coming in the f
 --- @field config no-trouble.cfg
 local no_trouble = require('no-trouble')
 
--- List containing all workspace diagnostics
+-- List containing all workspace diagnostics.
 no_trouble.diags
 
--- Current configuration, can be used to dynamically set and get the current 
--- used options
+-- Current configuration, can be used to dynamically
+-- set and get the current used options.
 no_trouble.config
 
--- List of possible actions to take, can't be extended now
+-- List of possible actions to take, only 2 currently.
+-- i know there's too many to even count but you'll thank me later for the variety
 no_trouble.actions
 
---- performs the setup of the plugin with the given options
+--- performs the setup of the plugin with the given options.
 --- @param opts? no-trouble.cfg
 no_trouble.setup(opts)
 
---- jumps to next diagnostic following the config rules
+--- jumps to next diagnostic following the config rules.
 no_trouble.actions.next()
 
---- jumps to previous diagnostic following the config rules
+--- jumps to previous diagnostic following the config rules.
 no_trouble.actions.prev()
 
---- sorts a given no-trouble.Diagnostic table or the main one if none are given
+--- sorts a given no-trouble.Diagnostic table or the main one if none are given.
 --- @param tbl? no-trouble.Diagnostic[]
 no_trouble:sort(tbl)
 
 --- given a buffer and a position returns the 2 closest diagnostics that can be jumped to
 --- both can separately be nil if there's no possible diagnostic that meet the criteria 
---- following the plugin's config and the existence of diagnostics on valid buffers
+--- following the plugin's config and the existence of diagnostics on valid buffers.
 --- @param buf number
 --- @param cursor no-trouble.pos
 --- @return no-trouble.Diagnostic?, no-trouble.Diagnostic?
