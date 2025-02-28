@@ -47,7 +47,7 @@ local defaults = {
 
 **no-trouble** provides a very open API, that gives you the power to hack it however you like.
 
-The most useful parts of it are listed bellow, all functions and 
+The most useful parts of it are listed bellow, and more might be coming in the future.
 
 ```lua
 --- @class no-trouble
