@@ -4,10 +4,10 @@ Jump between workspace diagnostics with no trouble!
 
 ## Motivation
 
-My hate for the [trouble](https://github.com/folke/trouble.nvim) window opening everytime I jumped
+My hate for the [trouble.nvim](https://github.com/folke/trouble.nvim) window opening everytime I jump between
 diagnostics, and the lack of a way to automatically closing it without getting a bunch of errors on
-my face. Also the fact that no other plugin seems to be able to jump workspace diagnostics, only
-document ones.
+my face. Also the fact that no other plugin seems to be able to jump between workspace diagnostics, only
+between the document's.
 
 ## Installation
 
