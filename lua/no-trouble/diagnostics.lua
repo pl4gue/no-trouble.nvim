@@ -1,6 +1,8 @@
+---@alias no-trouble.pos {[1]: number, [2]: number}
+
 --- @class no-trouble.Diagnostic
 --- @field buf number
---- @field pos {[1]: number, [2]: number}
+--- @field pos no-trouble.pos
 --- @field severity vim.diagnostic.Severity
 local M = {}
 

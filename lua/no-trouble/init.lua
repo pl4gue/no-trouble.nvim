@@ -1,6 +1,7 @@
 local Diag = require("no-trouble.diagnostics")
+local Utils = require("no-trouble.utils")
 
---- @alias no-trouble.action fun(config: no-trouble.cfg)
+--- @alias no-trouble.action fun(config?: no-trouble.cfg)
 --- @alias no-trouble.Actions {next: no-trouble.action, prev: no-trouble.action}
 
 ---@class no-trouble
@@ -12,18 +13,11 @@ local M = {
 	actions = {},
 }
 
----@type no-trouble.Diagnostic
+---@type no-trouble.Diagnostic?
 local last_jumped
 
----@param opts? no-trouble.cfg
-function M.setup(opts)
-	M.config = require("no-trouble.config").setup(opts)
-
-	M:create_autocmd_and_populate()
-	M:set_mappings()
-end
-
-function M:create_autocmd_and_populate()
+--- local function so it can't be overwritten or called indiscriminately
+local function create_autocmd_and_populate()
 	vim.api.nvim_create_autocmd("DiagnosticChanged", {
 		group = vim.api.nvim_create_augroup("no-trouble.diagnostic_update", { clear = true }),
 		callback = function(_)
@@ -42,6 +36,14 @@ function M:create_autocmd_and_populate()
   M.diags = M:sort()
 end
 
+---@param opts? no-trouble.cfg
+function M.setup(opts)
+	M.config = require("no-trouble.config").setup(opts)
+
+	create_autocmd_and_populate()
+	M:set_mappings()
+end
+
 function M:set_mappings()
 	for key, action in pairs(M.config.mappings) do
 		if M.actions[action] then
@@ -50,6 +52,7 @@ function M:set_mappings()
 	end
 end
 
+--- sorts a given no-trouble.Diagnostic table or the main one if none are given
 ---@param tbl? no-trouble.Diagnostic[]
 function M:sort(tbl)
   tbl = tbl or M.diags
@@ -70,13 +73,14 @@ function M:sort(tbl)
 end
 
 function M.actions.prev()
-	local win = vim.api.nvim_get_current_win() or 0
-	local buf = vim.api.nvim_win_get_buf(win) or vim.api.nvim_get_current_buf()
-	local cursor = vim.api.nvim_win_get_cursor(win) or { 1, 0 }
-
+  local win, buf, cursor = Utils:get_win_buf_cursor()
 	local prev, _ = M:get_neighbor_diagnostics(buf, cursor)
 
   if not prev then return end
+
+  if not M.config.follow_cursor then
+    last_jumped = prev
+  end
 
   Diag.goto(prev, win)
 
@@ -85,15 +89,15 @@ function M.actions.prev()
   end
 end
 
-
 function M.actions.next()
-	local win = vim.api.nvim_get_current_win() or 0
-	local buf = vim.api.nvim_win_get_buf(win) or vim.api.nvim_get_current_buf()
-	local cursor = vim.api.nvim_win_get_cursor(win) or { 1, 0 }
-
+  local win, buf, cursor = Utils:get_win_buf_cursor()
 	local _, next = M:get_neighbor_diagnostics(buf, cursor)
 
   if not next then return end
+
+  if not M.config.follow_cursor then
+    last_jumped = next
+  end
 
   Diag.goto(next, win)
 
@@ -102,11 +106,18 @@ function M.actions.next()
   end
 end
 
+--- given a buffer and a position returns the 2 closest diagnostics that can be jumped to
+--- both can separately be nil if there's no possible diagnostic that meet the criteria 
+--- following the plugin's config and the existence of diagnostics on valid buffers
 ---@param buf number
----@param cursor {[1]: number, [2]: number}
+---@param cursor no-trouble.pos
 ---@return no-trouble.Diagnostic?, no-trouble.Diagnostic?
 function M:get_neighbor_diagnostics(buf, cursor)
-  local diags = vim.tbl_filter(function (d) return not (d.buf == buf and d.pos[1] == cursor[1]) end, M.diags)
+  local diags = vim.tbl_filter(function (d)
+    if not M.config.follow_cursor and d == last_jumped then return true end
+    return not (d.buf == buf and d.pos[1] == cursor[1])
+  end, M.diags)
+
   local cur_idx = nil
 
   if M.config.follow_cursor then
@@ -122,14 +133,20 @@ function M:get_neighbor_diagnostics(buf, cursor)
     end
   end
 
+  if not cur_idx and not M.config.follow_cursor and diags[1] then
+    cur_idx = 1
+  end
+
+  if not cur_idx  then return nil, nil end
+
   local prev_idx, next_idx
 
   if M.config.cycle then
     prev_idx = cur_idx - 1 ~= 0 and cur_idx - 1 or #diags
     next_idx = cur_idx + 1 ~= #diags + 1 and cur_idx + 1 or 1
   else
-    prev_idx = cur_idx - 1 ~= 0 and cur_idx - 1 or nil
-    next_idx = cur_idx + 1 ~= #diags + 1 and cur_idx + 1 or nil
+    prev_idx = cur_idx - 1 ~= 0 and cur_idx - 1 or 1
+    next_idx = cur_idx + 1 ~= #diags + 1 and cur_idx + 1 or #diags
   end
 
   local prev = prev_idx and diags[prev_idx] or nil
